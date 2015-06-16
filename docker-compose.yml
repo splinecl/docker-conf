@@ -4,8 +4,6 @@ nginx:
     - 80:80
   volumes:
     - /tmp/nginx:/etc/nginx/conf.d
-  links:
-    - app
 
 nginxgen:
   image: jwilder/docker-gen:0.3.4
@@ -13,8 +11,15 @@ nginxgen:
     - /tmp/nginx:/etc/nginx/conf.d
     - /var/run/docker.sock:/tmp/docker.sock
     - ./templates:/etc/docker-gen/templates
-  command: -notify-sighup nginx -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
-    
+  command: -notify-sighup dockerconf_nginx_1 -watch /etc/docker-gen/templates/nginx.tmpl /etc/nginx/conf.d/default.conf
+  links:
+    - nginx
+    - app
+
+mongo:
+  image: mongo:3.0
+  restart: always
+  mem_limit: 100m
 
 app:
   image: splinecl/developer-day 
@@ -22,9 +27,4 @@ app:
     - mongo:db
   environment:
     - PROXY_GROUP=devday
-
-mongo:
-  image: mongo:3.0
-  restart: always
-  mem_limit: 100m
 
